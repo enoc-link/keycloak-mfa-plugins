@@ -124,11 +124,11 @@ public class SmsAuthenticator implements Authenticator, CredentialValidator<SmsA
 		} else {
 			// invalid
 			AuthenticationExecutionModel execution = context.getExecution();
-			if (execution.isRequired()) {
+			if (execution.isRequired() || execution.isAlternative()) {
 				context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS,
 					context.form().setAttribute("realm", context.getRealm())
 						.setError("smsAuthCodeInvalid").createForm(TPL_CODE));
-			} else if (execution.isConditional() || execution.isAlternative()) {
+			} else if (execution.isConditional()) {
 				context.attempted();
 			}
 		}
