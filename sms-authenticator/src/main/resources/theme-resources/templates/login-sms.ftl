@@ -3,6 +3,9 @@
 	<#if section = "header">
 		${msg("smsAuthTitle",realm.displayName)}
 	<#elseif section = "form">
+	  <#if warningMessage??>
+        <div class="alert alert-warning">${warningMessage}</div>
+    </#if>
 		<form onsubmit="login.disabled = true; return true;" id="kc-sms-code-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
 			<div class="${properties.kcFormGroupClass!}">
 				<div class="${properties.kcLabelWrapperClass!}">

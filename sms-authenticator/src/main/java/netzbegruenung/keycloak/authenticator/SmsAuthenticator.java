@@ -76,10 +76,26 @@ public class SmsAuthenticator implements Authenticator, CredentialValidator<SmsA
 		int length = Integer.parseInt(config.getConfig().get("length"));
 		int ttl = Integer.parseInt(config.getConfig().get("ttl"));
 
-		String code = SecretGenerator.getInstance().randomString(length, SecretGenerator.DIGITS);
 		AuthenticationSessionModel authSession = context.getAuthenticationSession();
+		// Check if an OTP was recently sent
+    String lastSentTimeStr = authSession.getAuthNote("lastOtpSentTime");
+    long currentTime = System.currentTimeMillis();
+
+    if (lastSentTimeStr != null) {
+        long lastSentTime = Long.parseLong(lastSentTimeStr);
+        if ((currentTime - lastSentTime) < 30 * 1000) { // Less than 30 seconds
+            context.challenge(context.form()
+                .setAttribute("warningMessage", "OTP already sent. Please wait 30 seconds before requesting a new one.")
+                .createForm(TPL_CODE));
+            return;
+        }
+    }
+
+		String code = SecretGenerator.getInstance().randomString(length, SecretGenerator.DIGITS);
+
 		authSession.setAuthNote("code", code);
 		authSession.setAuthNote("ttl", Long.toString(System.currentTimeMillis() + (ttl * 1000L)));
+		authSession.setAuthNote("lastOtpSentTime", Long.toString(currentTime));
 
 		try {
 			Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
